@@ -41,7 +41,7 @@ def listar_tarefas(concluida: bool | None = None):
     return resultado
 
 
-@app.post("/tarefas", response_model=Tarefa)
+@app.post("/tarefas", response_model=Tarefa, status_code=201)
 def criar_tarefa(tarefa: TarefaEntrada):
     global proximo_id
     nova_tarefa = Tarefa(
