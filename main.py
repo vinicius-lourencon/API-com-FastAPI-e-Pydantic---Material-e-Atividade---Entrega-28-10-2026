@@ -1,7 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-app = FastAPI()
+app = FastAPI(
+    title="API de Tarefas",
+    description="Gerenciador de tarefas simples feito pra atividade de FastAPI",
+)
 
 
 class TarefaEntrada(BaseModel):
