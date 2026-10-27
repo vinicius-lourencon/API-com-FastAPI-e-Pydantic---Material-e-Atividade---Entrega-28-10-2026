@@ -19,8 +19,15 @@ def raiz():
     return {"mensagem": "API de tarefas funcionando"}
 
 @app.get("/tarefas")
-def listar_tarefas():
-    return tarefas
+def listar_tarefas(concluida: bool | None = None):
+    if concluida is None:
+        return tarefas
+
+    resultado = []
+    for tarefa in tarefas:
+        if tarefa.concluida == concluida:
+            resultado.append(tarefa)
+    return resultado
 
 
 @app.post("/tarefas")
