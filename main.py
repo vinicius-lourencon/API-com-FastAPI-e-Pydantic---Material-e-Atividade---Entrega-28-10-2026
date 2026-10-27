@@ -47,3 +47,10 @@ def atualizar_tarefa(tarefa_id: int, tarefa_atualizada: Tarefa):
         if tarefa.id == tarefa_id:
             tarefa = tarefa_atualizada
             return tarefa
+        
+@app.delete("/tarefas/{tarefa_id}")
+def deletar_tarefa(tarefa_id: int):
+    for tarefa in tarefas:
+        if tarefa.id == tarefa_id:
+            tarefas.remove(tarefa)
+            return {"mensagem": "Tarefa deletada"}
