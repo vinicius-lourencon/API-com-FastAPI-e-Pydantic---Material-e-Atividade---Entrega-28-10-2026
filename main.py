@@ -43,10 +43,10 @@ def buscar_tarefa(tarefa_id: int):
         
 @app.put("/tarefas/{tarefa_id}")
 def atualizar_tarefa(tarefa_id: int, tarefa_atualizada: Tarefa):
-    for tarefa in tarefas:
+    for i, tarefa in enumerate(tarefas):
         if tarefa.id == tarefa_id:
-            tarefa = tarefa_atualizada
-            return tarefa
+            tarefas[i] = tarefa_atualizada
+            return tarefa_atualizada
         
 @app.delete("/tarefas/{tarefa_id}")
 def deletar_tarefa(tarefa_id: int):
