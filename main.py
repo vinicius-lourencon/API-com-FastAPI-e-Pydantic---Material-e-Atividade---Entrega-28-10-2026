@@ -27,3 +27,9 @@ def listar_tarefas():
 def criar_tarefa(tarefa: Tarefa):
     tarefas.append(tarefa)
     return tarefa
+
+@app.get("/tarefas/{tarefa_id}")
+def buscar_tarefa(tarefa_id: int):
+    for tarefa in tarefas:
+        if tarefa.id == tarefa_id:
+            return tarefa
