@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 app = FastAPI(
     title="API de Tarefas",
@@ -8,7 +8,7 @@ app = FastAPI(
 
 
 class TarefaEntrada(BaseModel):
-    titulo: str
+    titulo: str = Field(min_length=1)
     descricao: str | None = None
     concluida: bool = False
 
