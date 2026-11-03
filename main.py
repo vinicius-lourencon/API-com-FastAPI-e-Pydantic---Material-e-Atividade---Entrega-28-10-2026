@@ -1,11 +1,9 @@
 from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.orm import Session
 
-from database import Base, engine, get_db
+from database import get_db
 from models import TarefaModel
 from schemas import Tarefa, TarefaEntrada
-
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="API de Tarefas",
