@@ -1,5 +1,11 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
+from sqlalchemy.orm import Session
+
+from database import Base, engine, get_db
+from models import TarefaModel
 from schemas import Tarefa, TarefaEntrada
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="API de Tarefas",
@@ -7,34 +13,28 @@ app = FastAPI(
 )
 
 tarefas = []
-proximo_id = 1
 
 @app.get("/")
 def raiz():
     return {"mensagem": "API de tarefas funcionando"}
 
 @app.get("/tarefas", response_model=list[Tarefa])
-def listar_tarefas(concluida: bool | None = None):
-    if concluida is None:
-        return tarefas
-
-    resultado = []
-    for tarefa in tarefas:
-        if tarefa.concluida == concluida:
-            resultado.append(tarefa)
-    return resultado
+def listar_tarefas(concluida: bool | None = None, db: Session = Depends(get_db)):
+    consulta = db.query(TarefaModel)
+    if concluida is not None:
+        consulta = consulta.filter(TarefaModel.concluida == concluida)
+    return consulta.all()
 
 @app.post("/tarefas", response_model=Tarefa, status_code=201)
-def criar_tarefa(tarefa: TarefaEntrada):
-    global proximo_id
-    nova_tarefa = Tarefa(
-        id=proximo_id,
+def criar_tarefa(tarefa: TarefaEntrada, db: Session = Depends(get_db)):
+    nova_tarefa = TarefaModel(
         titulo=tarefa.titulo,
         descricao=tarefa.descricao,
         concluida=tarefa.concluida,
     )
-    tarefas.append(nova_tarefa)
-    proximo_id += 1
+    db.add(nova_tarefa)
+    db.commit()
+    db.refresh(nova_tarefa)
     return nova_tarefa
 
 @app.get("/tarefas/{tarefa_id}", response_model=Tarefa)
