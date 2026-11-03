@@ -12,8 +12,6 @@ app = FastAPI(
     description="Gerenciador de tarefas simples feito pra atividade de FastAPI",
 )
 
-tarefas = []
-
 @app.get("/")
 def raiz():
     return {"mensagem": "API de tarefas funcionando"}
@@ -38,29 +36,33 @@ def criar_tarefa(tarefa: TarefaEntrada, db: Session = Depends(get_db)):
     return nova_tarefa
 
 @app.get("/tarefas/{tarefa_id}", response_model=Tarefa)
-def buscar_tarefa(tarefa_id: int):
-    for tarefa in tarefas:
-        if tarefa.id == tarefa_id:
-            return tarefa
-    raise HTTPException(status_code=404, detail="Tarefa não encontrada")
+def buscar_tarefa(tarefa_id: int, db: Session = Depends(get_db)):
+    tarefa = db.query(TarefaModel).filter(TarefaModel.id == tarefa_id).first()
+    if tarefa is None:
+        raise HTTPException(status_code=404, detail="Tarefa não encontrada")
+    return tarefa
+
 
 @app.put("/tarefas/{tarefa_id}", response_model=Tarefa)
-def atualizar_tarefa(tarefa_id: int, tarefa_atualizada: TarefaEntrada):
-    for i, tarefa in enumerate(tarefas):
-        if tarefa.id == tarefa_id:
-            tarefas[i] = Tarefa(
-                id=tarefa_id,
-                titulo=tarefa_atualizada.titulo,
-                descricao=tarefa_atualizada.descricao,
-                concluida=tarefa_atualizada.concluida,
-            )
-            return tarefas[i]
-    raise HTTPException(status_code=404, detail="Tarefa não encontrada")
+def atualizar_tarefa(tarefa_id: int, tarefa_atualizada: TarefaEntrada, db: Session = Depends(get_db)):
+    tarefa = db.query(TarefaModel).filter(TarefaModel.id == tarefa_id).first()
+    if tarefa is None:
+        raise HTTPException(status_code=404, detail="Tarefa não encontrada")
+
+    tarefa.titulo = tarefa_atualizada.titulo
+    tarefa.descricao = tarefa_atualizada.descricao
+    tarefa.concluida = tarefa_atualizada.concluida
+    db.commit()
+    db.refresh(tarefa)
+    return tarefa
+
 
 @app.delete("/tarefas/{tarefa_id}")
-def deletar_tarefa(tarefa_id: int):
-    for tarefa in tarefas:
-        if tarefa.id == tarefa_id:
-            tarefas.remove(tarefa)
-            return {"mensagem": "Tarefa deletada"}
-    raise HTTPException(status_code=404, detail="Tarefa não encontrada")
+def deletar_tarefa(tarefa_id: int, db: Session = Depends(get_db)):
+    tarefa = db.query(TarefaModel).filter(TarefaModel.id == tarefa_id).first()
+    if tarefa is None:
+        raise HTTPException(status_code=404, detail="Tarefa não encontrada")
+
+    db.delete(tarefa)
+    db.commit()
+    return {"mensagem": "Tarefa deletada"}
