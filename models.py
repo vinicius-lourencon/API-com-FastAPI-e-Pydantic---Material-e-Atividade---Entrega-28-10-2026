@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column
 
 from database import Base
 
@@ -6,7 +7,7 @@ from database import Base
 class TarefaModel(Base):
     __tablename__ = "tarefas"
 
-    id = Column(Integer, primary_key=True, index=True)
-    titulo = Column(String, nullable=False)
-    descricao = Column(String, nullable=True)
-    concluida = Column(Boolean, default=False)
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    titulo: Mapped[str] = mapped_column(String, nullable=False)
+    descricao: Mapped[str | None] = mapped_column(String, nullable=True)
+    concluida: Mapped[bool] = mapped_column(default=False)
