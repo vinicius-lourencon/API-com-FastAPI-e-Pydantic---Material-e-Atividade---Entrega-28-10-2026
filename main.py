@@ -1,10 +1,11 @@
 from fastapi import FastAPI, HTTPException, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from auth import gerar_hash_senha
+from auth import criar_token, gerar_hash_senha, verificar_senha
 from database import get_db
 from models import TarefaModel, UsuarioModel
-from schemas import Tarefa, TarefaEntrada, Usuario, UsuarioCriar
+from schemas import Tarefa, TarefaEntrada, Token, Usuario, UsuarioCriar
 
 app = FastAPI(
     title="API de Tarefas",
@@ -29,6 +30,20 @@ def criar_usuario(usuario: UsuarioCriar, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(novo_usuario)
     return novo_usuario
+
+
+@app.post("/token", response_model=Token)
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    usuario = db.query(UsuarioModel).filter(UsuarioModel.email == form_data.username).first()
+    if usuario is None or not verificar_senha(form_data.password, usuario.senha_hash):
+        raise HTTPException(
+            status_code=401,
+            detail="Email ou senha incorretos",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    token = criar_token(usuario.email)
+    return {"access_token": token, "token_type": "bearer"}
 
 @app.get("/tarefas", response_model=list[Tarefa])
 def listar_tarefas(concluida: bool | None = None, db: Session = Depends(get_db)):
