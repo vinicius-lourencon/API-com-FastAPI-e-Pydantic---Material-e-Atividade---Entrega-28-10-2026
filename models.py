@@ -11,3 +11,11 @@ class TarefaModel(Base):
     titulo: Mapped[str] = mapped_column(String, nullable=False)
     descricao: Mapped[str | None] = mapped_column(String, nullable=True)
     concluida: Mapped[bool] = mapped_column(default=False)
+    
+
+class UsuarioModel(Base):
+    __tablename__ = "usuarios"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    email: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
+    senha_hash: Mapped[str] = mapped_column(String, nullable=False)
