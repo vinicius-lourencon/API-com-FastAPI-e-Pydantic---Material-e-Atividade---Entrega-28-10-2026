@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from auth import criar_token, gerar_hash_senha, verificar_senha
+from auth import criar_token, gerar_hash_senha, get_usuario_atual, verificar_senha
 from database import get_db
 from models import TarefaModel, UsuarioModel
 from schemas import Tarefa, TarefaEntrada, Token, Usuario, UsuarioCriar
@@ -53,7 +53,11 @@ def listar_tarefas(concluida: bool | None = None, db: Session = Depends(get_db))
     return consulta.all()
 
 @app.post("/tarefas", response_model=Tarefa, status_code=201)
-def criar_tarefa(tarefa: TarefaEntrada, db: Session = Depends(get_db)):
+def criar_tarefa(
+    tarefa: TarefaEntrada,
+    db: Session = Depends(get_db),
+    usuario: UsuarioModel = Depends(get_usuario_atual),
+):
     nova_tarefa = TarefaModel(
         titulo=tarefa.titulo,
         descricao=tarefa.descricao,
@@ -73,7 +77,12 @@ def buscar_tarefa(tarefa_id: int, db: Session = Depends(get_db)):
 
 
 @app.put("/tarefas/{tarefa_id}", response_model=Tarefa)
-def atualizar_tarefa(tarefa_id: int, tarefa_atualizada: TarefaEntrada, db: Session = Depends(get_db)):
+def atualizar_tarefa(
+    tarefa_id: int,
+    tarefa_atualizada: TarefaEntrada,
+    db: Session = Depends(get_db),
+    usuario: UsuarioModel = Depends(get_usuario_atual),
+):
     tarefa = db.query(TarefaModel).filter(TarefaModel.id == tarefa_id).first()
     if tarefa is None:
         raise HTTPException(status_code=404, detail="Tarefa não encontrada")
@@ -87,7 +96,11 @@ def atualizar_tarefa(tarefa_id: int, tarefa_atualizada: TarefaEntrada, db: Sessi
 
 
 @app.delete("/tarefas/{tarefa_id}")
-def deletar_tarefa(tarefa_id: int, db: Session = Depends(get_db)):
+def deletar_tarefa(
+    tarefa_id: int,
+    db: Session = Depends(get_db),
+    usuario: UsuarioModel = Depends(get_usuario_atual),
+):
     tarefa = db.query(TarefaModel).filter(TarefaModel.id == tarefa_id).first()
     if tarefa is None:
         raise HTTPException(status_code=404, detail="Tarefa não encontrada")
