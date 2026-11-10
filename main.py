@@ -1,9 +1,10 @@
 from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.orm import Session
 
+from auth import gerar_hash_senha
 from database import get_db
-from models import TarefaModel
-from schemas import Tarefa, TarefaEntrada
+from models import TarefaModel, UsuarioModel
+from schemas import Tarefa, TarefaEntrada, Usuario, UsuarioCriar
 
 app = FastAPI(
     title="API de Tarefas",
@@ -13,6 +14,21 @@ app = FastAPI(
 @app.get("/")
 def raiz():
     return {"mensagem": "API de tarefas funcionando"}
+
+@app.post("/usuarios", response_model=Usuario, status_code=201)
+def criar_usuario(usuario: UsuarioCriar, db: Session = Depends(get_db)):
+    existe = db.query(UsuarioModel).filter(UsuarioModel.email == usuario.email).first()
+    if existe:
+        raise HTTPException(status_code=400, detail="Email ja cadastrado")
+
+    novo_usuario = UsuarioModel(
+        email=usuario.email,
+        senha_hash=gerar_hash_senha(usuario.senha),
+    )
+    db.add(novo_usuario)
+    db.commit()
+    db.refresh(novo_usuario)
+    return novo_usuario
 
 @app.get("/tarefas", response_model=list[Tarefa])
 def listar_tarefas(concluida: bool | None = None, db: Session = Depends(get_db)):
