@@ -82,19 +82,41 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     token = criar_token(usuario.email)
     return {"access_token": token, "token_type": "bearer"}
 
-@app.get("/tarefas", response_model=list[Tarefa])
+@app.get(
+    "/tarefas",
+    response_model=list[Tarefa],
+    tags=["Tarefas"],
+    summary="Lista as tarefas",
+)
 def listar_tarefas(concluida: bool | None = None, db: Session = Depends(get_db)):
+    """
+    Lista todas as tarefas cadastradas.
+
+    Da pra filtrar pelo parametro **concluida** (true ou false). Sem ele, volta tudo.
+    """
     consulta = db.query(TarefaModel)
     if concluida is not None:
         consulta = consulta.filter(TarefaModel.concluida == concluida)
     return consulta.all()
 
-@app.post("/tarefas", response_model=Tarefa, status_code=201)
+@app.post(
+    "/tarefas",
+    response_model=Tarefa,
+    status_code=201,
+    tags=["Tarefas"],
+    summary="Cria uma tarefa",
+    responses={401: {"description": "Token ausente, invalido ou expirado"}},
+)
 def criar_tarefa(
     tarefa: TarefaEntrada,
     db: Session = Depends(get_db),
     usuario: UsuarioModel = Depends(get_usuario_atual),
 ):
+    """
+    Cria uma tarefa nova. **Precisa estar logado.**
+
+    O id é gerado pelo banco, nao precisa mandar.
+    """
     nova_tarefa = TarefaModel(
         titulo=tarefa.titulo,
         descricao=tarefa.descricao,
@@ -105,21 +127,42 @@ def criar_tarefa(
     db.refresh(nova_tarefa)
     return nova_tarefa
 
-@app.get("/tarefas/{tarefa_id}", response_model=Tarefa)
+@app.get(
+    "/tarefas/{tarefa_id}",
+    response_model=Tarefa,
+    tags=["Tarefas"],
+    summary="Busca uma tarefa pelo id",
+    responses={404: {"description": "Tarefa não encontrada"}},
+)
 def buscar_tarefa(tarefa_id: int, db: Session = Depends(get_db)):
+    """Busca uma tarefa pelo id. Se nao existir, devolve 404."""
     tarefa = db.query(TarefaModel).filter(TarefaModel.id == tarefa_id).first()
     if tarefa is None:
         raise HTTPException(status_code=404, detail="Tarefa não encontrada")
     return tarefa
 
 
-@app.put("/tarefas/{tarefa_id}", response_model=Tarefa)
+@app.put(
+    "/tarefas/{tarefa_id}",
+    response_model=Tarefa,
+    tags=["Tarefas"],
+    summary="Atualiza uma tarefa",
+    responses={
+        401: {"description": "Token ausente, invalido ou expirado"},
+        404: {"description": "Tarefa não encontrada"},
+    },
+)
 def atualizar_tarefa(
     tarefa_id: int,
     tarefa_atualizada: TarefaEntrada,
     db: Session = Depends(get_db),
     usuario: UsuarioModel = Depends(get_usuario_atual),
 ):
+    """
+    Substitui os dados de uma tarefa pelos dados enviados. **Precisa estar logado.**
+
+    O id vem pela URL e nao muda.
+    """
     tarefa = db.query(TarefaModel).filter(TarefaModel.id == tarefa_id).first()
     if tarefa is None:
         raise HTTPException(status_code=404, detail="Tarefa não encontrada")
@@ -132,12 +175,21 @@ def atualizar_tarefa(
     return tarefa
 
 
-@app.delete("/tarefas/{tarefa_id}")
+@app.delete(
+    "/tarefas/{tarefa_id}",
+    tags=["Tarefas"],
+    summary="Deleta uma tarefa",
+    responses={
+        401: {"description": "Token ausente, invalido ou expirado"},
+        404: {"description": "Tarefa não encontrada"},
+    },
+)
 def deletar_tarefa(
     tarefa_id: int,
     db: Session = Depends(get_db),
     usuario: UsuarioModel = Depends(get_usuario_atual),
 ):
+    """Apaga uma tarefa do banco. **Precisa estar logado.**"""
     tarefa = db.query(TarefaModel).filter(TarefaModel.id == tarefa_id).first()
     if tarefa is None:
         raise HTTPException(status_code=404, detail="Tarefa não encontrada")
