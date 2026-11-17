@@ -7,13 +7,27 @@ from database import get_db
 from models import TarefaModel, UsuarioModel
 from schemas import Tarefa, TarefaEntrada, Token, Usuario, UsuarioCriar
 
+tags_metadata = [
+    {
+        "name": "Usuarios",
+        "description": "Cadastro de usuarios e login. O login devolve o token JWT usado nas rotas protegidas.",
+    },
+    {
+        "name": "Tarefas",
+        "description": "CRUD das tarefas. As rotas de leitura sao publicas, as de criar, atualizar e deletar precisam de token.",
+    },
+]
+
 app = FastAPI(
     title="API de Tarefas",
     description="Gerenciador de tarefas simples feito pra atividade de FastAPI",
+    version="1.0.0",
+    openapi_tags=tags_metadata,
 )
 
-@app.get("/")
+@app.get("/", tags=["Status"], summary="Verifica se a API esta no ar")
 def raiz():
+    """Rota simples so pra conferir se o servidor esta rodando."""
     return {"mensagem": "API de tarefas funcionando"}
 
 @app.post("/usuarios", response_model=Usuario, status_code=201)
