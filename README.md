@@ -72,7 +72,7 @@ sem fazer login essas rotas retornam 401
 token gerado pela rota /token (ele vence em 30 minutos):
 
 ```
-COLE_O_TOKEN_AQUI
+exemplo de token:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0ZUBlbWFpbC5jb20iLCJleHAiOjE3OTUwMDAwMDB9.HFzHCQccuWT0cCS36N4UNSkHdzs4GfAaoA5PT4HqYMA"
 ```
 
 pra usar fora do swagger tem que mandar no header assim:
