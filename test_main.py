@@ -1,0 +1,50 @@
+import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
+
+from database import Base, get_db
+from main import app
+
+engine_teste = create_engine(
+    "sqlite://",
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
+SessionTeste = sessionmaker(autocommit=False, autoflush=False, bind=engine_teste)
+
+
+def get_db_teste():
+    db = SessionTeste()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+app.dependency_overrides[get_db] = get_db_teste
+client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def banco_limpo():
+    Base.metadata.create_all(bind=engine_teste)
+    yield
+    Base.metadata.drop_all(bind=engine_teste)
+
+
+def test_listar_tarefas_retorna_200():
+    resposta = client.get("/tarefas")
+    assert resposta.status_code == 200
+    assert resposta.json() == []
+
+
+def test_buscar_tarefa_inexistente_retorna_404():
+    resposta = client.get("/tarefas/999")
+    assert resposta.status_code == 404
+
+
+def test_criar_tarefa_sem_token_retorna_401():
+    resposta = client.post("/tarefas", json={"titulo": "Estudar"})
+    assert resposta.status_code == 401
