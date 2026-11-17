@@ -2,9 +2,9 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class TarefaEntrada(BaseModel):
-    titulo: str = Field(min_length=1)
-    descricao: str | None = None
-    concluida: bool = False
+    titulo: str = Field(min_length=1, description="Titulo da tarefa", examples=["Estudar FastAPI"])
+    descricao: str | None = Field(default=None, description="Detalhes da tarefa", examples=["Fazer a atividade de testes"])
+    concluida: bool = Field(default=False, description="Se a tarefa ja foi feita")
 
 
 class Tarefa(BaseModel):
@@ -17,8 +17,8 @@ class Tarefa(BaseModel):
     
 
 class UsuarioCriar(BaseModel):
-    email: str = Field(min_length=3)
-    senha: str = Field(min_length=6)
+    email: str = Field(min_length=3, description="Email usado no login", examples=["aluno@email.com"])
+    senha: str = Field(min_length=6, description="Senha com no minimo 6 caracteres", examples=["123456"])
 
 
 class Usuario(BaseModel):
