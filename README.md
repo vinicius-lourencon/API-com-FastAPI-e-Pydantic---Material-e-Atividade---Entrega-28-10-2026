@@ -8,9 +8,10 @@ Dupla: Nicolas Wolf e Vinicius Antonio Lourençon
 
 o mesmo repositorio foi usado nas 3 atividades, cada uma foi feita em cima da anterior:
 
-- **Atividade 1** - API com FastAPI e Pydantic - entrega 28/10/2026 - feita em 26/10
-- **Atividade 2** - Persistencia de dados e migracoes - entrega 04/11/2026 - feita em 03/11
-- **Atividade 3** - Autenticacao e autorizacao (tokens) - entrega 11/11/2026 - feita em 10/11
+- **Atividade 1** - API com FastAPI e Pydantic - entrega 28/10/2026 
+- **Atividade 2** - Persistencia de dados e migracoes - entrega 04/11/2026 
+- **Atividade 3** - Autenticacao e autorizacao (tokens) - entrega 11/11/2026 
+- **Atividade 4** - Testes e documentacao - entrega 18/11/2026 
 
 as datas de cada parte tambem aparecem no historico de commits
 
@@ -33,6 +34,18 @@ no linux/mac pra ativar o venv é `source venv/bin/activate`
 o `alembic upgrade head` cria o arquivo tarefas.db com as tabelas, tem que rodar antes de subir a api senao da erro
 
 depois abrir http://127.0.0.1:8000/docs que ta tudo no swagger
+
+- test_main.py - testes automaticos com pytest
+
+## Como rodar os testes
+
+com o venv ativado:
+
+```
+pytest
+```
+
+os testes usam um banco na memoria, entao nao mexem no tarefas.db. tem 7 testes: listar tarefas (200), buscar tarefa que nao existe (404), criar tarefa sem token (401), login com senha errada (401), login certo devolvendo token, criar tarefa com token (201) e deletar tarefa com token
 
 ## Rotas
 
@@ -77,6 +90,8 @@ Authorization: Bearer <token>
 - auth.py - hash da senha e geracao/validacao do token
 - alembic/ - migracoes do banco
 
+- test_main.py - testes automaticos com pytest
+
 ## O que foi feito em cada atividade
 
 **Atividade 1:** CRUD de tarefas com os dados numa lista em memoria, modelos do pydantic pra entrada e saida e documentacao pelo swagger.
@@ -84,3 +99,5 @@ Authorization: Bearer <token>
 **Atividade 2:** troca da lista em memoria por banco SQLite com SQLAlchemy, rotas usando sessao com Depends e tabela criada pelo Alembic. O arquivo .db fica no .gitignore.
 
 **Atividade 3:** tabela de usuarios com senha em hash, rota /token que devolve um JWT e as rotas POST, PUT e DELETE de tarefas protegidas pelo token.
+
+**Atividade 4:** documentacao das rotas no swagger com tags, resumos, descricoes (docstrings), respostas de erro e exemplos nos schemas. Testes automaticos com pytest e TestClient.
