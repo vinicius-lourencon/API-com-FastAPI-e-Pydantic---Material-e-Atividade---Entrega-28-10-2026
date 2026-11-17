@@ -48,3 +48,15 @@ def test_buscar_tarefa_inexistente_retorna_404():
 def test_criar_tarefa_sem_token_retorna_401():
     resposta = client.post("/tarefas", json={"titulo": "Estudar"})
     assert resposta.status_code == 401
+    
+def test_login_com_senha_errada_retorna_401():
+    client.post("/usuarios", json={"email": "teste@email.com", "senha": "123456"})
+    resposta = client.post("/token", data={"username": "teste@email.com", "password": "errada"})
+    assert resposta.status_code == 401
+
+
+def test_login_retorna_token():
+    client.post("/usuarios", json={"email": "teste@email.com", "senha": "123456"})
+    resposta = client.post("/token", data={"username": "teste@email.com", "password": "123456"})
+    assert resposta.status_code == 200
+    assert resposta.json()["token_type"] == "bearer"
