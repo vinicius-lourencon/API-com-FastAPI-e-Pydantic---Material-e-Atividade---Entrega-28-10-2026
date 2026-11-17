@@ -30,8 +30,20 @@ def raiz():
     """Rota simples so pra conferir se o servidor esta rodando."""
     return {"mensagem": "API de tarefas funcionando"}
 
-@app.post("/usuarios", response_model=Usuario, status_code=201)
+@app.post(
+    "/usuarios",
+    response_model=Usuario,
+    status_code=201,
+    tags=["Usuarios"],
+    summary="Cadastra um usuario",
+    responses={400: {"description": "Email ja cadastrado"}},
+)
 def criar_usuario(usuario: UsuarioCriar, db: Session = Depends(get_db)):
+    """
+    Cria um usuario novo com email e senha.
+
+    A senha é salva com hash no banco e nunca é devolvida na resposta.
+    """
     existe = db.query(UsuarioModel).filter(UsuarioModel.email == usuario.email).first()
     if existe:
         raise HTTPException(status_code=400, detail="Email ja cadastrado")
@@ -46,8 +58,19 @@ def criar_usuario(usuario: UsuarioCriar, db: Session = Depends(get_db)):
     return novo_usuario
 
 
-@app.post("/token", response_model=Token)
+@app.post(
+    "/token",
+    response_model=Token,
+    tags=["Usuarios"],
+    summary="Faz login e devolve o token",
+    responses={401: {"description": "Email ou senha incorretos"}},
+)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """
+    Recebe o email no campo **username** e a senha no campo **password**.
+
+    Se estiver certo, devolve um token JWT que vale por 30 minutos.
+    """
     usuario = db.query(UsuarioModel).filter(UsuarioModel.email == form_data.username).first()
     if usuario is None or not verificar_senha(form_data.password, usuario.senha_hash):
         raise HTTPException(
